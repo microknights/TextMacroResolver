@@ -27,7 +27,7 @@ namespace MicroKnights.Texting.Results
             ObjectValue = objectValue;
             CultureInfo = cultureInfo;
             StringValue = ObjectValue as string ?? Convert.ToString(ObjectValue, cultureInfo);
-            FormattedText = string.IsNullOrWhiteSpace(textFormat) ? StringValue : string.Format(cultureInfo, textFormat, ObjectValue);
+            FormattedText = string.IsNullOrWhiteSpace(textFormat) ? StringValue : string.Format(cultureInfo, $"{{0:{textFormat}}}", ObjectValue);
         }
 
         public bool IsResolved => Exception == null;

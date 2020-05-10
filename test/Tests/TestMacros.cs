@@ -14,23 +14,26 @@ namespace UnitTest.Tests
         private readonly ITestOutputHelper _outputHelper;
         private readonly TextMacroResolver _textMacroResolver;
 
-        private readonly string TextWithMacros = @"{{system.datetime.now:yyyy mm DD:}} 
+        private readonly string TextWithMacros = @"{{system.datetime.now:yyyy mm DD}} 
 Donec pharetra bibendum augue, congue dignissim mauris sodales pulvinar. 
 Sed vitae est at sem volutpat placerat. 
 Donec in sem ut massa accumsan rhoncus sed nec quam. 
 Nam dictum luctus tortor et faucibus. 
-{{system.datetime.now:o:}}
+{{system.datetime.now:o}}
 Etiam sit amet lacus lacus. 
 Morbi lobortis scelerisque interdum {{system.datetime.year}}. 
 Aenean mollis, elit at pharetra ullamcorper, ligula mi maximus ligula, eget elementum est quam non tortor. 
-Suspendisse iaculis {{system.datetime.ticks:N0:}} pharetra diam sit amet auctor. 
+Suspendisse iaculis {{system.datetime.ticks:N0}} pharetra diam sit amet auctor. 
 Sed commodo pharetra dolor sit amet tincidunt. 
 Quisque imperdiet tellus arcu, eu varius nulla tempus eget. 
 Sed vel consequat ex {{system.machine.name}}. 
 Vivamus lobortis tincidunt mattis {{system.machine.name}}. 
 Praesent aliquam tincidunt arcu, vel facilisis ex dictum eu. 
+{{system.datetime.now}}
 Vivamus purus urna, finibus eu lacus eget, condimentum ullamcorper ipsum.
 Level {{context.entityid.check}}";
+
+        private readonly int MacroCount = 8;
 
 
         public TestMacros(TestFixture<TestMacroValueContext> fixture, ITestOutputHelper outputHelper)
@@ -51,9 +54,9 @@ Level {{context.entityid.check}}";
             foreach (var macroName in textMacroResolver.GetResolverMacroNames())
             {
                 var result = await _textMacroResolver.ResolveMacro(macroName);
-
+#if DEBUG
                 _outputHelper.WriteLine($"{result.IsResolved} | {macroName} = {result.FormattedText}");
-                
+#endif       
                 Assert.True(result.IsResolved);
             }
         }
@@ -74,7 +77,7 @@ Level {{context.entityid.check}}";
                 _outputHelper.WriteLine($"{macro.FullMatch} | {macro.MacroName} | {macro.TextFormat}");
             }
 #endif
-            Assert.True(result.Length == 7, $"Expected 7 got {result.Length}");
+            Assert.True(result.Length == MacroCount, $"Expected {MacroCount} got {result.Length}");
         }
 
         [Fact]
@@ -86,12 +89,17 @@ Level {{context.entityid.check}}";
 
             var result = await _textMacroResolver.ResolveText(TextWithMacros);
 
-            Assert.True(result.ResolvedMacros.Count() == 6, $"Expected 6 got {result.ResolvedMacros.Count()}");
-            Assert.True(result.IsResolved);
-            Assert.NotStrictEqual(TextWithMacros,result.ResolvedText);
 #if DEBUG
+            foreach (var macro in result.ResolvedMacros)
+            {
+                _outputHelper.WriteLine($"{macro.OriginalMacroName} = \"{macro.FormattedText}\"");
+            }
             _outputHelper.WriteLine(result.ResolvedText);
 #endif
+            var expectMacroCount = MacroCount - 1; // one is used twice...
+            Assert.True(result.ResolvedMacros.Count() == expectMacroCount, $"Expected {expectMacroCount} got {result.ResolvedMacros.Count()}");
+            Assert.True(result.IsResolved);
+            Assert.NotStrictEqual(TextWithMacros, result.ResolvedText);
         }
     }
 }

@@ -16,7 +16,7 @@ namespace UnitTest.Macos
             _context = context;
         }
 
-        public override string DefaultTextFormat => "{0:dddd d 'of' MMMM 'in year' yyyy}";
+        public override string DefaultTextFormat => "dddd d 'of' MMMM 'in year' yyyy";
 
         public override Task<MacroValueResult> Resolve(string originalMacroName, string textFormat)
         {
@@ -44,7 +44,7 @@ namespace UnitTest.Macos
             _context = context;
         }
 
-        public override string DefaultTextFormat => "{0:N0}";
+        public override string DefaultTextFormat => "N0";
 
         public override Task<MacroValueResult> Resolve(string originalMacroName, string textFormat)
         {
